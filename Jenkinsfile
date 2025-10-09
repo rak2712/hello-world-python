@@ -8,9 +8,11 @@ pipeline {
     }
 
     stages {
+
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/rak2712/hello-world-python.git'
+                // Explicitly specify 'main' branch to avoid defaulting to 'master'
+                git branch: 'main', url: 'https://github.com/rak2712/hello-world-python.git'
             }
         }
 
@@ -23,7 +25,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-credentials', // This should match the ID in Jenkins Credentials
+                    credentialsId: 'dockerhub-credentials', // Must match ID in Jenkins Credentials
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -49,7 +51,7 @@ pipeline {
 
     post {
         always {
-            cleanWs() // Cleans workspace after every build (success or fail)
+            cleanWs() // Always clean up workspace to avoid leftover files
         }
     }
 }
