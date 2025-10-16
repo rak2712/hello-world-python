@@ -2,15 +2,12 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "rakshith3/hello-world-python:latest"   // Use your actual Docker Hub repo name
-        CONTAINER_NAME = "hello-world-flask"
-        PORT = "5005"
+        IMAGE_NAME = "rakshith3/hello-world-python:latest"
     }
 
     stages {
         stage('Clone GitHub Repo') {
             steps {
-                // Clone the GitHub repo (main branch)
                 git branch: 'main', url: 'https://github.com/rak2712/hello-world-python.git'
             }
         }
@@ -24,7 +21,7 @@ pipeline {
 
         stage('Push Image to Docker Hub') {
             steps {
-                echo "📦 Logging in and pushing image to Docker Hub..."
+                echo "📦 Pushing image to Docker Hub..."
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
@@ -39,14 +36,10 @@ pipeline {
             }
         }
 
-        stage('Deploy Container (Optional)') {
+        stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Running container locally (for test)..."
-                sh '''
-                    docker stop $CONTAINER_NAME || true
-                    docker rm $CONTAINER_NAME || true
-                    docker run -d --name $CONTAINER_NAME --restart unless-stopped -p $PORT:5005 $IMAGE_NAME
-                '''
+                echo "🚀 Deploying to Kubernetes..."
+                sh 'kubectl apply -f k8s/deployment.yaml'
             }
         }
     }
