@@ -23,11 +23,11 @@ kind: Service
 metadata:
   name: hello-python-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: hello-python
   ports:
     - protocol: TCP
       port: 5005
       targetPort: 5005
-      nodePort: 30005
+      # Do NOT specify nodePort here with LoadBalancer, minikube tunnel will assign one automatically
