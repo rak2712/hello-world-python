@@ -36,6 +36,13 @@ pipeline {
             }
         }
 
+        stage('Test Kubernetes Access') {
+            steps {
+                echo "🔍 Verifying Kubernetes connection..."
+                sh 'kubectl get pods -n default'
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
