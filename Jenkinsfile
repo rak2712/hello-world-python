@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "rakshith3/hello-world-python:latest"
+        SERVICE_PORT = "5005"
+        NODE_PORT = "30005"
     }
 
     stages {
@@ -47,6 +49,28 @@ pipeline {
             steps {
                 echo "🚀 Deploying to Kubernetes..."
                 sh 'kubectl apply -f k8s/deployment.yaml --validate=false'
+            }
+        }
+
+        stage('Port-Forward Service for External Access') {
+            steps {
+                echo "🌐 Starting port-forward to expose service on all interfaces..."
+                // Kill existing port-forward if any, then start new one in background
+                sh '''
+                    pkill -f "kubectl port-forward svc/hello-python-service $SERVICE_PORT:$SERVICE_PORT" || true
+                    nohup kubectl port-forward svc/hello-python-service $SERVICE_PORT:$SERVICE_PORT --address 0.0.0.0 > port-forward.log 2>&1 &
+                '''
+            }
+        }
+
+        stage('Show Access Info') {
+            steps {
+                script {
+                    // Get host IP (simplified)
+                    def hostIp = sh(script: "hostname -I | awk '{print \$1}'", returnStdout: true).trim()
+                    echo "✅ Your app is now accessible at:"
+                    echo "    http://${hostIp}:${SERVICE_PORT}"
+                }
             }
         }
     }
